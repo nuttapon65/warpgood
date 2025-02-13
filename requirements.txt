@@ -124,7 +124,7 @@ python-socketio==5.11.4
 pytube==15.0.0
 pytweening==1.2.0
 pytz==2023.3.post1
-pywin32==306
+pywin32==227
 pywin32-ctypes==0.2.2
 pyzmq==26.0.3
 requests==2.32.3
