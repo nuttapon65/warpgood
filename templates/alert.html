@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Message Display</title>
+    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+    <script>
+        const socket = io.connect("http://127.0.0.1:5000");
+
+        socket.on("connect", () => {
+            console.log("Socket connected!");
+        });
+
+        // รับข้อความใหม่และแสดงผล
+        socket.on("update_alert", function(data) {
+            if (data.messages) {
+                // แสดงข้อความทั้งหมดที่ดึงมาจากฐานข้อมูล
+                const messagesContainer = document.getElementById("messages");
+                messagesContainer.innerHTML = "";
+                data.messages.forEach(message => {
+                    const messageElement = document.createElement("div");
+                    messageElement.textContent = message;
+                    messagesContainer.appendChild(messageElement);
+                });
+            }
+            if (data.message) {
+                // แสดงข้อความใหม่ที่ได้รับ
+                const messageElement = document.createElement("div");
+                messageElement.textContent = data.message;
+                document.getElementById("messages").appendChild(messageElement);
+            }
+        });
+
+        function sendMessage() {
+            const message = document.getElementById("messageInput").value;
+            socket.emit("send_message", { message: message });  // ส่งข้อความไปที่เซิร์ฟเวอร์
+        }
+    </script>
+</head>
+<body>
+    <h1>Messages</h1>
+    <div id="messages">
+        <!-- ข้อความที่ดึงจากฐานข้อมูลจะถูกแสดงที่นี่ -->
+    </div>
+    
+    <input type="text" id="messageInput" placeholder="Type a message">
+    <button onclick="sendMessage()">Send Message</button>
+</body>
+</html>

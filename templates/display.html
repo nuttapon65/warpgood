@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Display Message</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.4.1/socket.io.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: auto;
+            margin: 0;
+            background-color: #121212;  /* Dark background */
+            color: #f0f0f0;  /* Light text color */
+        }
+
+        .card {
+            background-color: #1e1e1e;  /* Dark card background */
+            /*border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); */
+            width: auto;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .card-header {
+            font-size: 28px;
+            font-weight: bold;
+            color: #bb86fc;  /* Light purple for header */
+        }
+
+        .card-body {
+            font-size: 18px;
+            color: #e4c600;  /* White text for body */
+            margin-top: 5px;
+        }
+
+        #messageBox {
+            font-size: 30px;
+            padding: 10px;
+            border: 1px solid #333;
+            background-color: #333;  /* Dark background for message box */
+            color: #e4c600;  /* Light text color for message box */
+            border-radius: 4px;
+            border: 2px solid #f39c12;
+            margin-top: 10px;
+            max-height: 300px;
+            overflow-y: auto;
+            height: auto;
+        }
+
+        .fade-in {
+            animation: fadeIn 1s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .fade-out {
+            animation: fadeOut 1s ease-in-out forwards;
+        }
+
+        @keyframes fadeOut {
+            from { opacity: 1; transform: scale(1); }
+            to { opacity: 0; transform: scale(0.9); }
+        }
+
+        #heartContainer {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        }
+
+        .heart-float {
+            position: absolute;
+            bottom: 0;
+            font-size: 4rem;
+            animation: floatUp 3s linear forwards;
+        }
+
+        @keyframes floatUp {
+            0% { transform: translateY(0); opacity: 1; }
+            100% { transform: translateY(-100vh); opacity: 0; }
+        }
+
+        img {
+            max-width: 100%;
+            border-radius: 10px;
+        }
+        .social-link {
+            color: #ffcc00;
+            text-decoration: none;
+            font-size: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container pt-2">
+
+        <div class="container pt-2">
+            <div class="row border border-3 border-warning rounded p-2">
+                <div class="col-sm-12">
+                    <center><h3 id="time"></h3></center>
+                </div>
+            </div>
+        </div>
+
+        <div class="container pt-2">
+            <div class="row">
+              
+                <div class="col-sm-8">
+                    <div class="row border border-3 border-warning rounded">
+                        <div class="col-sm-12">
+                            <div class="card">
+                                <div class="card-header" id="usernameBox">Waiting for message...</div>
+                                <div class="card-body">
+                                    <div id="messageBox">Waiting for message...</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row border border-3 border-warning rounded">
+                        <div class="col-sm-12">
+                            Level 2: .col-4 .col-sm-6
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-sm-4 border border-3 border-warning rounded">
+                     <!-- ส่วนแสดงรูป -->
+                     <div id="imageContainer"></div>
+
+                </div>
+                  
+
+            </div>
+          </div>
+    </div>
+
+
+    <div id="heartContainer"></div>
+
+    <script>
+        var socket = io();
+        var messageQueue = []; // คิวสำหรับเก็บข้อความที่เข้ามา
+        var isProcessing = false; // ใช้เช็คว่าเรากำลังแสดงข้อความหรือไม่
+
+        // ฟังก์ชันเพื่อแสดงข้อความทีละอันจากคิว
+        function processMessages() {
+            if (messageQueue.length > 0 && !isProcessing) {
+                isProcessing = true; // ตั้งให้กำลังแสดงข้อความ
+                var currentMessage = messageQueue.shift(); // เอาข้อความแรกออกจากคิว
+                var messageBox = document.getElementById("messageBox");
+                var usernameBox = document.getElementById("usernameBox");
+
+                // แสดงชื่อผู้ส่งใน card-header
+                usernameBox.innerText = currentMessage.username;
+
+                // แสดงข้อความใน messageBox
+                messageBox.innerText = currentMessage.message;
+
+                speakMessage(currentMessage.message);
+
+                // ทำให้ข้อความหายไปหลังจากแสดงสักพัก
+                setTimeout(function() {
+                    messageBox.classList.add("fade-out");
+                }, 10000);  // ข้อความจะหายไปหลังจากแสดง 10 วินาที
+
+                // รีเซ็ตข้อความใน messageBox เป็น "Waiting for message..." หลังจากหายไป
+                setTimeout(function() {
+                    //messageBox.innerText = "Waiting for message...";
+                    messageBox.classList.remove("fade-out");
+
+                    // หลังจากข้อความหายไปแล้ว เริ่มแสดงข้อความถัดไปจากคิว
+                    isProcessing = false;
+                    processMessages();  // เรียกฟังก์ชันนี้อีกครั้งเพื่อแสดงข้อความถัดไป
+                }, 11000);  // รีเซ็ตหลังจากข้อความหายไปแล้ว (หลังจาก 11 วินาที)
+            }
+        }
+
+        // ฟังก์ชันแสดงเวลาในประเทศไทย
+        function updateTime() {
+            var options = { timeZone: 'Asia/Bangkok' };
+            var now = new Date();
+
+            // ฟอร์แมตเวลาเป็น "DD/MM/YYYY HH:mm:ss"
+            var day = ("0" + now.getDate()).slice(-2);
+            var month = ("0" + (now.getMonth() + 1)).slice(-2);
+            var year = now.getFullYear();
+            var hours = ("0" + now.getHours()).slice(-2);
+            var minutes = ("0" + now.getMinutes()).slice(-2);
+            var seconds = ("0" + now.getSeconds()).slice(-2);
+
+            var time = day + "/" + month + "/" + year + " " + hours + ":" + minutes + ":" + seconds;
+            document.getElementById("time").innerText = time;
+        }
+
+        // อัปเดตเวลาในทุกๆ วินาที
+        setInterval(updateTime, 1000);
+
+        socket.on('sendHeart', function() {
+            createHeart();
+        });
+
+         // ฟังก์ชันสำหรับการอ่านข้อความด้วยเสียง
+        function speakMessage(message) {
+            var speech = new SpeechSynthesisUtterance(message);
+            speech.voice = speechSynthesis.getVoices().find(function(voice) {
+                return voice.name === 'Google UK English Female';  // เลือกเสียงที่คล้าย Siri (เสียงภาษาอังกฤษ)
+            }) || speechSynthesis.getVoices()[0];  // ใช้เสียงแรกที่มีหากไม่พบเสียง 'Samantha'
+            speech.lang = 'th-TH';  // กำหนดภาษาเป็นอังกฤษ
+            speechSynthesis.speak(speech);
+        }
+
+        socket.on('latestMessage', function(data) {
+            // เพิ่มข้อความใหม่เข้าไปในคิว
+            messageQueue.push(data);
+            processMessages(); // เริ่มแสดงข้อความจากคิว
+        });
+    </script>
+    <script>
+        var socket = io();
+    
+        socket.on('sendHeart', function() {
+            createHeart();
+        });
+    
+        function createHeart() {
+            let heart = document.createElement("div");
+            heart.innerHTML = "❤️";
+            heart.className = "heart-float";
+            heart.style.left = Math.random() * 80 + "vw"; 
+            document.getElementById("heartContainer").appendChild(heart);
+    
+            setTimeout(() => { heart.remove(); }, 4000);
+        }
+    </script>
+    <script>
+        var socket = io();
+
+        socket.on("newImage", function(data) {
+            var imgContainer = document.getElementById("imageContainer");
+            var socialIcon = {
+                "facebook": "📘",
+                "instagram": "📷",
+                "twitter": "🐦",
+                "tiktok": "🎵",
+                "youtube": "▶️"
+            }[data.social] || "🔗";  // ถ้าไม่ตรงให้ใช้ไอคอน 🔗
+
+            var socialLinkHTML = data.link ? `<a href="${data.link}" target="_blank" class="social-link">${socialIcon} ${data.social}</a>` : "";
+
+            imgContainer.innerHTML = `<div class="card">
+                <img src="${data.imageUrl}" alt="Uploaded Image">
+                <p>${socialLinkHTML}</p>
+            </div>`;
+        });
+    </script>
+    <script>
+        var socket = io();
+        var imageQueue = [];
+        var isImageProcessing = false;
+
+        function processImages() {
+            if (imageQueue.length > 0 && !isImageProcessing) {
+                isImageProcessing = true;
+                var currentImage = imageQueue.shift();
+                var imgContainer = document.getElementById("imageContainer");
+                imgContainer.innerHTML = `<img src="/static/uploads/${currentImage}" alt="load" class="img-fluid rounded">`;
+                setTimeout(() => {
+                    imgContainer.innerHTML = "";
+                    isImageProcessing = false;
+                    processImages();
+                }, 10000);
+                
+
+            }
+        }
+        socket.on("newImage", function(data) {
+            imageQueue.push(data.filename);
+            processImages();
+        });
+    </script>
+
+</body>
+</html>
