@@ -1,23 +1,3 @@
-import subprocess
-import sys
-
-# ฟังก์ชันสำหรับติดตั้งโมดูลที่จำเป็น
-def install_package(package):
-    try:
-        __import__(package)
-    except ImportError:
-        print(f"Installing {package}...")
-        subprocess.check_call([sys.executable, "-m", "pip", "install", package])
-
-# รายชื่อแพ็กเกจที่ต้องใช้
-required_packages = ["flask", "flask_socketio", "pytz", "werkzeug"]
-
-# ติดตั้งแพ็กเกจทั้งหมดที่จำเป็น
-for package in required_packages:
-    install_package(package)
-
-
-
 import os
 import sqlite3
 import pytz
