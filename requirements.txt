@@ -154,7 +154,7 @@ validators==0.22.0
 w3lib==2.2.1
 wcwidth==0.2.13
 websocket-client==1.8.0
-websockets==13.1
+websockets==10.4
 Werkzeug==3.0.0
 winotify==1.1.0
 wsproto==1.2.0
