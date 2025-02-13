@@ -120,4 +120,4 @@ def handle_heart():
     socketio.emit('sendHeart')
 
 if __name__ == '__main__':
-    socketio.run(app, debug=True, port=3000)
+    socketio.run(app, debug=True, port=3000 , allow_unsafe_werkzeug=True)
