@@ -120,5 +120,5 @@ def handle_heart():
     socketio.emit('sendHeart')
 
 from waitress import serve  # ใช้ Waitress สำหรับ server บน Windows หรือ Linux
-serve(app, host='0.0.0.0', port=3000)
+serve(app, host='warpgood-production.up.railway.app', port=3000)
 
