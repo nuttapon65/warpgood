@@ -2,7 +2,7 @@ import os
 import sqlite3
 import pytz
 from datetime import datetime
-from flask import Flask, render_template, request, jsonify, send_from_directory
+from flask import Flask, render_template, request, jsonify, redirect, send_from_directory, url_for
 from flask_socketio import SocketIO
 from werkzeug.utils import secure_filename
 
@@ -90,7 +90,7 @@ def save_image(filename):
 def upload_file():
     if 'file' not in request.files:
         return jsonify({"status": "error", "message": "No file part"})
-    
+
     file = request.files['file']
     if file.filename == '':
         return jsonify({"status": "error", "message": "No file uploaded"})
@@ -120,5 +120,5 @@ def handle_heart():
     socketio.emit('sendHeart')
 
 from waitress import serve  # ใช้ Waitress สำหรับ server บน Windows หรือ Linux
-serve(app, host='warpgood-production.up.railway.app', port=3000)
+serve(app, host='0.0.0.0', port=3000)
 

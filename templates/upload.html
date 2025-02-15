@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Upload Image</title>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.4.1/socket.io.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -18,27 +20,31 @@
             display: none;
             border-radius: 10px;
         }
-        input, button, select {
+        input, select {
             margin: 10px;
             padding: 10px;
-            width: 80%;
+            width: 100%;
         }
     </style>
 </head>
 <body>
-
-    <h2>Upload an Image</h2>
-
-    <form id="uploadForm" enctype="multipart/form-data">
-        <input type="file" id="fileInput" accept="image/*" required>
+    <div class="container pt-2">
         <br>
-        <button type="submit">Upload</button>
-    </form>
-
-    <img id="preview">
-
-    <br>
-    <a href="{{ url_for('display') }}" style="color: lightblue;">Go to Display Page</a>
+        <div class="border border-warning p-2 rounded">
+            <h2 class="p-2">อัปโหลดรูปภาพ</h2>
+            <hr>
+            <form id="uploadForm" enctype="multipart/form-data">
+                <input type="file" id="fileInput" accept="image/*" required>
+                <br>
+                <button class="w-100 btn btn-success p-2" type="submit">Upload</button>
+            </form>
+            <center>
+            <img id="preview">
+            </center>
+        </div>
+        <br>
+        <center> <a href="/" class="menu-button-dl w-100 btn btn-danger" >◀️ ย้อนกลับหน้าแรก</a> <center>
+    </div>
 
     <script>
         document.getElementById("fileInput").addEventListener("change", function(event) {
